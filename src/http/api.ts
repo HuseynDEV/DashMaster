@@ -1,6 +1,7 @@
 
 import { auth } from '@/services/firebaseConfig'
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, getAuth } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
 
 // export const login =async ({ email, password }: { email: string, password: string }) => {
@@ -23,7 +24,8 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfi
 export const login = async ({ email, password }: { email: string, password: string }) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password)
-        return userCredential.user
+        const accessToken = await userCredential.user.getIdToken()
+        return { accessToken, user:userCredential.user }
     }
     catch (err) {
         throw err
@@ -32,12 +34,9 @@ export const login = async ({ email, password }: { email: string, password: stri
 
 
 
-export const register = async ({ email, password, name }: { email: string, password: string, name: string }) => {
-    console.log(name)
+export const register = async ({ email, password }: { email: string, password: string, name: string }) => {
     try {
         const userData = await createUserWithEmailAndPassword(auth, email, password)
-        await updateProfile(userData.user, { displayName: name })
-        console.log(userData.user, 'userData')
         return userData
     }
     catch (err) {

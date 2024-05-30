@@ -1,4 +1,4 @@
-import { Link, Outlet } from "react-router-dom"
+import { Link, Navigate, Outlet } from "react-router-dom"
 import {
     Bell,
     CircleUser,
@@ -30,9 +30,22 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { useTokenStore } from "@/store"
 
 
 const DashboardLayout = () => {
+
+    const token = useTokenStore(state => state.token)
+    const setToken = useTokenStore(state => state.setToken)
+
+    if (token == "") {
+        return <Navigate to='/auth/login' />
+    }
+
+    const logout = () => {
+        setToken("")
+    }
+
     return (
         <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
             <div className="hidden border-r bg-muted/40 md:block">
@@ -107,8 +120,8 @@ const DashboardLayout = () => {
                                     <Package2 className="h-6 w-6" />
                                     <span className="sr-only">Acme Inc</span>
                                 </Link>
-                               
-                               
+
+
                                 <Link
                                     to='/dashboard/home'
                                     className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
@@ -123,7 +136,7 @@ const DashboardLayout = () => {
                                     <Users className="h-5 w-5" />
                                     Books
                                 </Link>
-                              
+
                             </nav>
                             <div className="mt-auto">
                                 <Card>
@@ -168,7 +181,9 @@ const DashboardLayout = () => {
                             <DropdownMenuItem>Settings</DropdownMenuItem>
                             <DropdownMenuItem>Support</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>Logout</DropdownMenuItem>
+                            <DropdownMenuItem>
+                                <Button onClick={logout}>Logout</Button>
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </header>
