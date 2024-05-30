@@ -15,6 +15,7 @@ import { Link } from "react-router-dom"
 
 import { useNavigate } from "react-router-dom"
 import { login } from "@/http/api"
+import { useTokenStore } from "@/store"
 
 const Login = () => {
 
@@ -22,10 +23,13 @@ const Login = () => {
     const passwordref = useRef<HTMLInputElement>(null)
     const navigate = useNavigate()
 
+    const setToken = useTokenStore(state => state.setToken)
+
     const mutation = useMutation({
         mutationFn: login,
         onSuccess: (data) => {
             console.log('login successfuly', data.accessToken)
+            setToken(data.accessToken)
             navigate('/dashboard/home')
         },
         onError: () => {
