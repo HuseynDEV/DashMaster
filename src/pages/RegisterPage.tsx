@@ -15,6 +15,7 @@ import { auth } from '@/services/firebaseConfig'
 import { FormEvent, useState } from "react"
 import { register } from "@/http/api"
 import { useNavigate } from "react-router-dom"
+import { useMutation } from "@tanstack/react-query"
 
 
 
@@ -22,23 +23,26 @@ import { useNavigate } from "react-router-dom"
 const RegisterPage = () => {
 
     const [email, setEmail] = useState("")
-    const [password, setPassword] = useState('')
+    const [password, setPassword] = useState("")
+    const [name, setName] = useState("")
     const navigate = useNavigate()
 
 
+
+    const mutate = useMutation({
+        mutationFn: register,
+        onSuccess: () => {
+            console.log('register successfully')
+            navigate('/dashboard/home')
+        }
+    })
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
-        try {
-            if (email && password) {
-                const dataRegister = await register({ email, password })
-                console.log(dataRegister, 'register')
-                navigate('/dashboard/home')
-            }
 
+        if (!email || !password || !name) {
+            alert("Please fill the all blanks")
         }
-        catch (err) {
-            console.log(err)
-        }
+        mutate.mutateAsync({ email, password, name })
     }
     return (
         <section className="h-screen flex justify-center items-center">
@@ -54,7 +58,7 @@ const RegisterPage = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="first-name">Name</Label>
-                                <Input id="first-name" placeholder="Max" required />
+                                <Input value={name} onChange={(e) => setName(e.target.value)} id="first-name" placeholder="Max" required />
                             </div>
 
                         </div>
