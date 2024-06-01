@@ -1,15 +1,22 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@radix-ui/react-label"
-import { Form, FormProvider, useForm } from "react-hook-form"
+import { FormProvider, useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from 'zod'
+import { ChangeEvent, useState } from "react"
+import { imgData } from "@/services/firebaseConfig"
+import { v4 as uuidv4 } from 'uuid'
+import { uploadBytes, ref, getDownloadURL } from "firebase/storage"
+import { useMutation } from "@tanstack/react-query"
+import { addBook } from "@/http/api"
 
 
-const forSchema = z.object({
+const formSchema = z.object({
     username: z.string().min(2, {
         message: "Username must be at least 2 characters.",
     }),
@@ -20,20 +27,55 @@ const forSchema = z.object({
         message: "Description must be at least 2 characters.",
     }),
     coverImage: z.instanceof(FileList).refine(file => {
-        return file.length == 1, "Cover image is required"
-    }),
-    file: z.instanceof(FileList).refine(file => {
-        return file.length == 1, "Book PDF is required"
-    })
+        return file.length == 1
+    }, "Cover image is required"),
+    // file: z.instanceof(FileList).refine(file => {
+    //     return file.length == 1;
+    // }, "Book PDF is required")
 })
 
 const CreateBook = () => {
 
-    const form = useForm()
+    const [image, setImage] = useState<string>('')
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            username: "",
+            genre: "",
+            description: "",
+
+        }
+    })
+    const coverImageRef = form.register('coverImage')
+
+    const mutation = useMutation({
+        mutationFn: addBook,
+        onSuccess: () => {
+            console.log('added')
+        }
+    })
+    // const fileRef = form.register('file')
+    function onSubmit(values: z.infer<typeof formSchema>) {
+        mutation.mutate({...values, coverImage:image})
+    //    console.log({...values,coverImage:image })
+    }
+
+    const handleImage = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const dataImg = ref(imgData, `images/${uuidv4()}`)
+            uploadBytes(dataImg, e.target.files[0]).then(data => {
+                getDownloadURL(data?.ref).then(val => {
+                    console.log(coverImageRef)
+                    setImage(val)
+                })
+            })
+        }
+    }
+
     return (
         <section>
-            <FormProvider  {...form}>
-                <form action="">
+            <Form  {...form}>
+                <form action="" onSubmit={form.handleSubmit(onSubmit)}>
                     <div className="flex items-center justify-between">
                         <Breadcrumb>
                             <BreadcrumbList>
@@ -128,14 +170,15 @@ const CreateBook = () => {
                                 <FormField
                                     control={form.control}
                                     name="coverImage"
-                                    render={({ field }) => (
+                                    render={() => (
                                         <FormItem>
                                             <FormLabel>Cover Image</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="file"
                                                     className="w-full"
-                                                    {...field}
+                                                    {...coverImageRef}
+                                                    onChange={handleImage}
                                                 />
                                             </FormControl>
 
@@ -145,30 +188,30 @@ const CreateBook = () => {
                                 />
 
 
-                                <FormField
+                                {/* <FormField
                                     control={form.control}
                                     name="file"
-                                    render={({ field }) => (
+                                    render={() => (
                                         <FormItem>
                                             <FormLabel>Book PDF</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="file"
                                                     className="w-full"
-                                                    {...field}
+                                                    {...fileRef}
                                                 />
                                             </FormControl>
 
                                             <FormMessage />
                                         </FormItem>
                                     )}
-                                />
+                                /> */}
 
                             </div>
                         </CardContent>
                     </Card>
                 </form>
-            </FormProvider >
+            </Form >
 
         </section>
     )
