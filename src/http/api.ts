@@ -1,7 +1,7 @@
 
-import { auth } from '@/services/firebaseConfig'
+import { auth, dataBooks } from '@/services/firebaseConfig'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom';
+import { addDoc, collection } from 'firebase/firestore';
 
 
 // export const login =async ({ email, password }: { email: string, password: string }) => {
@@ -20,12 +20,18 @@ import { useNavigate } from 'react-router-dom';
 //         });
 // }
 
+type bookDataType = {
+    username: string,
+    genre: string,
+    description: string,
+    coverImage: string,
+}
 
 export const login = async ({ email, password }: { email: string, password: string }) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password)
         const accessToken = await userCredential.user.getIdToken()
-        return { accessToken, user:userCredential.user }
+        return { accessToken, user: userCredential.user }
     }
     catch (err) {
         throw err
@@ -41,5 +47,17 @@ export const register = async ({ email, password }: { email: string, password: s
     }
     catch (err) {
         console.log(err)
+    }
+}
+
+
+export const addBook = async (data: bookDataType) => {
+    try {
+        const dataCollection =  collection(dataBooks, 'dataBooks')
+        await addDoc(dataCollection, data)
+        alert('Added')
+    }
+    catch (err) {
+        console.log(err, 'err')
     }
 }
