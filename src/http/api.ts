@@ -1,7 +1,7 @@
 
 import { auth, dataBooks } from '@/services/firebaseConfig'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, getDocs } from 'firebase/firestore';
 
 
 // export const login =async ({ email, password }: { email: string, password: string }) => {
@@ -20,7 +20,7 @@ import { addDoc, collection } from 'firebase/firestore';
 //         });
 // }
 
-type bookDataType = {
+export type bookDataType = {
     username: string,
     genre: string,
     description: string,
@@ -53,11 +53,25 @@ export const register = async ({ email, password }: { email: string, password: s
 
 export const addBook = async (data: bookDataType) => {
     try {
-        const dataCollection =  collection(dataBooks, 'dataBooks')
+        const dataCollection = collection(dataBooks, 'dataBooks')
         await addDoc(dataCollection, data)
-        alert('Added')
     }
     catch (err) {
         console.log(err, 'err')
+    }
+}
+
+
+export const getBooks = async () => {
+    try {
+        const data = collection(dataBooks, "dataBooks")
+        const resp = await getDocs(data)
+       return resp.docs.map(doc=>{
+        const data=doc.data()
+        return {...data, id:doc.id}
+       })
+    }
+    catch (err) {
+        console.log(err)
     }
 }

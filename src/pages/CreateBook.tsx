@@ -4,16 +4,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@radix-ui/react-label"
-import { FormProvider, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from 'zod'
 import { ChangeEvent, useState } from "react"
 import { imgData } from "@/services/firebaseConfig"
 import { v4 as uuidv4 } from 'uuid'
 import { uploadBytes, ref, getDownloadURL } from "firebase/storage"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { addBook } from "@/http/api"
+import { useNavigate } from "react-router-dom"
+import { LoaderCircle } from "lucide-react"
 
 
 const formSchema = z.object({
@@ -35,6 +36,7 @@ const formSchema = z.object({
 })
 
 const CreateBook = () => {
+    const navigate = useNavigate()
 
     const [image, setImage] = useState<string>('')
     const form = useForm<z.infer<typeof formSchema>>({
@@ -47,17 +49,18 @@ const CreateBook = () => {
         }
     })
     const coverImageRef = form.register('coverImage')
+    const queryClient = useQueryClient()
 
     const mutation = useMutation({
         mutationFn: addBook,
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['dataBooks'] })
             console.log('added')
+            navigate('/dashboard/books')
         }
     })
-    // const fileRef = form.register('file')
     function onSubmit(values: z.infer<typeof formSchema>) {
-        mutation.mutate({...values, coverImage:image})
-    //    console.log({...values,coverImage:image })
+        mutation.mutate({ ...values, coverImage: image })
     }
 
     const handleImage = (e: ChangeEvent<HTMLInputElement>) => {
@@ -97,8 +100,9 @@ const CreateBook = () => {
                             <Button variant={"outline"}>
                                 <span>Cancel</span>
                             </Button>
-                            <Button type="submit">
-                                <span>Submit</span>
+                            <Button type="submit" disabled={mutation.isPending}>
+
+                                <div className="flex gap-1 items-center">{mutation.isPending && <LoaderCircle className="animate-spin" />} Submit</div>
                             </Button>
                         </div>
                     </div>

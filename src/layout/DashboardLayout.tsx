@@ -3,23 +3,14 @@ import {
     Bell,
     CircleUser,
     Home,
-    LineChart,
     Menu,
     Package,
     Package2,
     Search,
-    ShoppingCart,
     Users,
 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -31,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useTokenStore } from "@/store"
+import { NavLink } from "react-router-dom"
 
 
 const DashboardLayout = () => {
@@ -80,22 +72,7 @@ const DashboardLayout = () => {
 
                         </nav>
                     </div>
-                    <div className="mt-auto p-4">
-                        <Card x-chunk="dashboard-02-chunk-0">
-                            <CardHeader className="p-2 pt-0 md:p-4">
-                                <CardTitle>Upgrade to Pro</CardTitle>
-                                <CardDescription>
-                                    Unlock all features and get unlimited access to our support
-                                    team.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-2 pt-0 md:p-4 md:pt-0">
-                                <Button size="sm" className="w-full">
-                                    Upgrade
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    </div>
+                  
                 </div>
             </div>
             <div className="flex flex-col">
@@ -122,38 +99,27 @@ const DashboardLayout = () => {
                                 </Link>
 
 
-                                <Link
+                                <NavLink
                                     to='/dashboard/home'
-                                    className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                                    className={({isActive})=>{
+                                      return isActive ? "bg-red-600" : "bg-green-600"
+                                    }}
                                 >
                                     <Package className="h-5 w-5" />
                                     Home
-                                </Link>
-                                <Link
+                                </NavLink>
+                                <NavLink
                                     to='/dashboard/books'
-                                    className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                                    className={({isActive})=>{
+                                        return isActive ? "bg-red-600" : ""
+                                      }}
                                 >
                                     <Users className="h-5 w-5" />
                                     Books
-                                </Link>
+                                </NavLink>
 
                             </nav>
-                            <div className="mt-auto">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Upgrade to Pro</CardTitle>
-                                        <CardDescription>
-                                            Unlock all features and get unlimited access to our
-                                            support team.
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <Button size="sm" className="w-full">
-                                            Upgrade
-                                        </Button>
-                                    </CardContent>
-                                </Card>
-                            </div>
+                         
                         </SheetContent>
                     </Sheet>
                     <div className="w-full flex-1">
