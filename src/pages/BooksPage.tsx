@@ -11,19 +11,34 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useQuery } from "@tanstack/react-query"
-import { getBooks } from "@/http/api"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { deleteBook } from "@/http/api"
 
 import { Link } from "react-router-dom"
+import { useTokenStore } from "@/store"
 
 
 const BooksPage = () => {
 
-    const { data, isLoading } = useQuery({
-        queryKey: ['books'],
-        queryFn: getBooks
+
+    const booksStore = useTokenStore(state => state.deleteBook)
+
+    const queryClient = useQueryClient()
+    const mutation = useMutation({
+        mutationFn: deleteBook,
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['dataBooks'] })
+            booksStore(data)
+            console.log('deleted')
+        }
     })
 
+
+    const handleDelete = (id: string) => {
+        mutation.mutateAsync(id)
+    }
+
+    const booksData = useTokenStore(state => state.books)
 
     return (
         <div>
@@ -81,7 +96,7 @@ const BooksPage = () => {
 
                             {
 
-                                data && data?.map(item => {
+                                booksData && Array.isArray(booksData) && booksData.map(item => {
                                     return (
                                         <TableRow key={item.id}>
                                             <TableCell className="hidden sm:table-cell">
@@ -122,7 +137,7 @@ const BooksPage = () => {
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                         <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                        <DropdownMenuItem>Delete</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleDelete(item.id)}>Delete</DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
