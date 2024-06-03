@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from 'zod'
-import { ChangeEvent, useState } from "react"
+import { ChangeEvent, useRef, useState } from "react"
 import { imgData } from "@/services/firebaseConfig"
 import { v4 as uuidv4 } from 'uuid'
 import { uploadBytes, ref, getDownloadURL } from "firebase/storage"
@@ -15,6 +15,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { addBook } from "@/http/api"
 import { useNavigate } from "react-router-dom"
 import { LoaderCircle } from "lucide-react"
+import { useTokenStore } from "@/store"
 
 
 const formSchema = z.object({
@@ -48,28 +49,41 @@ const CreateBook = () => {
 
         }
     })
+    const btn = useRef<HTMLButtonElement>(null)
+    const addBookStore = useTokenStore(state => state.addBook)
+
     const coverImageRef = form.register('coverImage')
     const queryClient = useQueryClient()
 
     const mutation = useMutation({
         mutationFn: addBook,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['dataBooks'] })
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['dataBooks'] });
+            console.log(data, 'data')
+            const allData = form.getValues()
+            addBookStore({ ...allData, coverImage: image, id: data.id })
             console.log('added')
             navigate('/dashboard/books')
         }
     })
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        mutation.mutate({ ...values, coverImage: image })
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        mutation.mutateAsync({ ...values, coverImage: image })
+        setImage('')
     }
 
     const handleImage = (e: ChangeEvent<HTMLInputElement>) => {
+        if (btn.current) {
+            btn.current.disabled = true
+        }
         if (e.target.files) {
             const dataImg = ref(imgData, `images/${uuidv4()}`)
             uploadBytes(dataImg, e.target.files[0]).then(data => {
                 getDownloadURL(data?.ref).then(val => {
                     console.log(coverImageRef)
                     setImage(val)
+                    if (btn.current) {
+                        btn.current.disabled = false
+                    }
                 })
             })
         }
@@ -100,7 +114,7 @@ const CreateBook = () => {
                             <Button variant={"outline"}>
                                 <span>Cancel</span>
                             </Button>
-                            <Button type="submit" disabled={mutation.isPending}>
+                            <Button type="submit" ref={btn} disabled={mutation.isPending && image !== ''}>
 
                                 <div className="flex gap-1 items-center">{mutation.isPending && <LoaderCircle className="animate-spin" />} Submit</div>
                             </Button>

@@ -23,10 +23,13 @@ import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useTokenStore } from "@/store"
 import { NavLink } from "react-router-dom"
+import { fetchUsers } from "@/hook/fetchUsers"
 
 
 const DashboardLayout = () => {
 
+    fetchUsers()
+    
     const token = useTokenStore(state => state.token)
     const setToken = useTokenStore(state => state.setToken)
 
@@ -72,7 +75,7 @@ const DashboardLayout = () => {
 
                         </nav>
                     </div>
-                  
+
                 </div>
             </div>
             <div className="flex flex-col">
@@ -101,8 +104,8 @@ const DashboardLayout = () => {
 
                                 <NavLink
                                     to='/dashboard/home'
-                                    className={({isActive})=>{
-                                      return isActive ? "bg-red-600" : "bg-green-600"
+                                    className={({ isActive }) => {
+                                        return `flex items-center gap-2 text-black  ${isActive && 'opacity-100 '}`
                                     }}
                                 >
                                     <Package className="h-5 w-5" />
@@ -110,16 +113,16 @@ const DashboardLayout = () => {
                                 </NavLink>
                                 <NavLink
                                     to='/dashboard/books'
-                                    className={({isActive})=>{
-                                        return isActive ? "bg-red-600" : ""
-                                      }}
+                                    className={({ isActive }) => {
+                                        return `flex items-center gap-2 text-black ${isActive && ' opacity-50 '}`
+                                    }}
                                 >
                                     <Users className="h-5 w-5" />
                                     Books
                                 </NavLink>
 
                             </nav>
-                         
+
                         </SheetContent>
                     </Sheet>
                     <div className="w-full flex-1">
